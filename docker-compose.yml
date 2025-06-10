@@ -198,7 +198,7 @@ services:
       context: ./metrics-api
     volumes:
       - ./logs/metrics-api:/logs/
-    env_file: /metrics-api/prod.env
+    env_file: ./metrics-api/prod.env
     depends_on:
       metrics-db:
         condition: service_healthy
@@ -234,7 +234,7 @@ services:
   devices-api:
     build:
       context: ./devices-api
-    env_file: /devices-api/prod.env
+    env_file: ./devices-api/prod.env
     volumes:
       - ./logs/devices-api:/logs/
     depends_on:
@@ -250,7 +250,7 @@ services:
   rule-engine:
     build:
       context: ./rule-engine
-    env_file: /rule-engine/prod.env
+    env_file: ./rule-engine/prod.env
     volumes:
       - ./logs/rule-engine:/logs/
     depends_on:
