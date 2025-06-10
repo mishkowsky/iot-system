@@ -71,7 +71,6 @@ jobs:
           pytest --cov=src tests/
 
       - name: Integration tests
-        working-directory: ./integration_tests
         env:
           PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
         run: |
@@ -83,4 +82,4 @@ jobs:
           docker compose up -d nginx
           docker compose logs -f &
 
-          python test.py
+          python integration_tests/test.py
