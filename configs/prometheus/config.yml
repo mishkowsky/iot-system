@@ -1,0 +1,24 @@
+global:
+  scrape_interval: 5s
+
+  external_labels:
+    monitor: "iot-service"
+
+rule_files:
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["prometheus:9090"]
+
+  - job_name: "metrics-api-scraper"
+    static_configs:
+      - targets: ["metrics-api:8000"]
+
+  - job_name: "rule-engine-scraper"
+    static_configs:
+      - targets: ["rule-engine:8000"]
+
+  - job_name: "devices-api-scraper"
+    static_configs:
+      - targets: ["devices-api:8000"]

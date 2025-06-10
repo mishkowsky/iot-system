@@ -1,0 +1,61 @@
+filebeat.inputs:
+  - type: filestream
+    id: devices-api-logs
+    paths:
+      - /logs/devices-api/logs.txt
+    parsers:
+      - ndjson:
+          target: ""
+          add_error_key: false
+          message_key: text
+    fields:
+      service: devices-api
+  - type: filestream
+    id: rule-engine-logs
+    paths:
+      - /logs/rule-engine/logs.txt
+    parsers:
+      - ndjson:
+          target: ""
+          add_error_key: false
+          message_key: text
+    fields:
+      service: rule-engine
+  - type: filestream
+    id: metrics-api-logs
+    paths:
+      - /logs/metrics-api/logs.txt
+    parsers:
+      - ndjson:
+          target: ""
+          add_error_key: false
+          message_key: text
+    fields:
+      service: metrics-api
+  - type: filestream
+    id: mongodb-logs
+    paths:
+      - /logs/mongodb/logs.txt
+    parsers:
+      - ndjson:
+          target: ""
+          add_error_key: false
+          message_key: text
+    fields:
+      service: mongodb
+
+output.logstash:
+  hosts: ["logstash:5044"]
+
+
+
+#filebeat.inputs:
+#  - type: log
+#    enabled: true
+#    paths:
+#      - /var/log/*.log
+#      - /var/log/**/*.log
+#      - /var/log/**/*.txt
+#
+#output.logstash:
+#  hosts: ["logstash:5044"]

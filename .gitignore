@@ -1,0 +1,8 @@
+db-data
+*.db
+postgres_data
+data
+logs
+.idea
+*/.idea
+sandbox*
