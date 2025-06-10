@@ -51,3 +51,17 @@
 #         mock_collection = MagicMock()
 #         mock_get_collection.return_value = mock_collection
 #         yield mock_collection
+from unittest.mock import MagicMock
+
+import pytest
+
+
+@pytest.fixture()
+def mock_rabbit_mq(mocker):
+    mock_connection = MagicMock()
+    mock_channel = MagicMock()
+
+    mock_pika = mocker.patch("src.rabbit_mq_manager.monitor.pika.BlockingConnection")
+    mock_pika.return_value = mock_connection
+    mock_connection.channel.return_value = mock_channel
+    mock_connection.is_closed = False

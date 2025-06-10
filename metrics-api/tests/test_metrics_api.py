@@ -3,14 +3,12 @@ from unittest.mock import patch, MagicMock
 from fastapi.testclient import TestClient
 from datetime import datetime
 
-from src.database import MongoDB
-from src.main import app
-from src.rabbit_mq_manager.monitor import RabbitMQManager
-from src.redis_manager.manager import RedisManager
-from src.schemas import MetricCreate
 
 
-client = TestClient(app)
+@pytest.fixture
+def client(mock_rabbit_mq):
+    from src.main import app
+    return TestClient(app)
 
 
 @pytest.fixture
@@ -20,6 +18,7 @@ def sample_metric():
 
 @pytest.fixture
 def metric_obj():
+    from src.schemas import MetricCreate
     return MetricCreate(value=42, timestamp=datetime.now())
 
 
@@ -27,8 +26,9 @@ def metric_obj():
 # RedisManager Tests
 # --------------------
 
-def test_set_device_metric_redis(mocker):
+def test_set_device_metric_redis(mocker, mock_rabbit_mq):
     mock_redis = mocker.patch("src.redis_manager.manager.StrictRedis").return_value
+    from src.redis_manager.manager import RedisManager
     redis_mgr = RedisManager()
     redis_mgr.set_device_metric(device_id=1, value=42)
 
@@ -37,9 +37,10 @@ def test_set_device_metric_redis(mocker):
     )
 
 
-def test_get_device_metric_redis(mocker):
+def test_get_device_metric_redis(mocker, mock_rabbit_mq):
     mock_redis = mocker.patch("src.redis_manager.manager.StrictRedis").return_value
     mock_redis.hgetall.return_value = {"metric": "42", "new": "False"}
+    from src.redis_manager.manager import RedisManager
     redis_mgr = RedisManager()
 
     result = redis_mgr.get_device_metric(1)
@@ -55,7 +56,7 @@ def test_create_metrics_entry_mongodb(mocker, metric_obj):
     mock_collection = MagicMock()
     mock_client = mocker.patch("src.database.MongoClient").return_value
     mock_client.__getitem__.return_value.__getitem__.return_value = mock_collection
-
+    from src.database import MongoDB
     db = MongoDB()
     mock_collection.insert_one.return_value = None
     metric_dict = metric_obj.dict()
@@ -68,7 +69,7 @@ def test_create_metrics_entry_mongodb(mocker, metric_obj):
     mock_collection.insert_one.assert_called_once()
 
 
-def test_get_device_metrics_mongodb(mocker):
+def test_get_device_metrics_mongodb(mocker, mock_rabbit_mq):
     mock_collection = MagicMock()
     mock_cursor = MagicMock()
     mock_cursor.sort.return_value = [{"value": 1}, {"value": 2}]
@@ -76,7 +77,7 @@ def test_get_device_metrics_mongodb(mocker):
 
     mock_client = mocker.patch("src.database.MongoClient").return_value
     mock_client.__getitem__.return_value.__getitem__.return_value = mock_collection
-
+    from src.database import MongoDB
     db = MongoDB()
     result = db.get_device_metrics(1)
 
@@ -84,13 +85,13 @@ def test_get_device_metrics_mongodb(mocker):
     assert result[0]["value"] == 1
 
 
-def test_get_device_latest_metric_db(mocker):
+def test_get_device_latest_metric_db(mocker, mock_rabbit_mq):
     mock_collection = MagicMock()
     mock_collection.find_one.return_value = {"value": 123}
 
     mock_client = mocker.patch("src.database.MongoClient").return_value
     mock_client.__getitem__.return_value.__getitem__.return_value = mock_collection
-
+    from src.database import MongoDB
     db = MongoDB()
     result = db.get_device_latest_metric(1)
     assert result["value"] == 123
@@ -110,6 +111,7 @@ def test_publish_data_rabbitmq(mocker, metric_obj):
     mock_connection.is_closed = False
 
     with patch("src.schemas.Metric.model_dump_json", return_value='{"value": 42}') as mock_json:
+        from src.rabbit_mq_manager.monitor import RabbitMQManager
         rabbit_mgr = RabbitMQManager()
         metric = mocker.Mock()
         metric.model_dump_json.return_value = '{"value": 42}'
@@ -122,7 +124,7 @@ def test_publish_data_rabbitmq(mocker, metric_obj):
 # API Endpoint Tests
 # -----------------------
 
-def test_create_device_metric_endpoint(mocker, sample_metric):
+def test_create_device_metric_endpoint(client, mocker, sample_metric, mock_rabbit_mq):
     mock_db = mocker.patch("src.main.db")
     mock_rabbit = mocker.patch("src.main.rabbit_mq_manager")
     mock_redis = mocker.patch("src.main.redis_manager")
@@ -140,12 +142,10 @@ def test_create_device_metric_endpoint(mocker, sample_metric):
     mock_redis.set_device_metric.assert_called_once()
 
 
-def test_get_device_latest_metric_endpoint(mocker):
+def test_get_device_metrics_history_endpoint(client, mocker, mock_rabbit_mq):
     mock_db = mocker.patch("src.main.db")
-    mock_db.get_device_latest_metric_db.return_value = {
-        "device_id": 1, "metric": 55, "timestamp": datetime.now().isoformat()
-    }
+    mock_db.get_device_metrics.return_value = [{"device_id": 1, "value": 10, "timestamp": datetime.now().isoformat()}]
 
-    response = client.get("/api/metrics/latest?device_id=1")
+    response = client.get("/api/metrics/?device_id=1")
     assert response.status_code == 200
-    assert response.json()["device_id"] == 1
+    assert response.json()[0]["device_id"] == 1
