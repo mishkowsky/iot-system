@@ -22,7 +22,7 @@ def test_create_device(client):
 
 
 def test_get_related_room_by_device_id(client):
-    response = client.get("/api/devices/1/room")
+    response = client.get("/api/devices/2/room")
     assert response.status_code == 200
     assert response.json()["id"] == 1
 

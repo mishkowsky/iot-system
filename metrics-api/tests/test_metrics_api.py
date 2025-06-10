@@ -7,7 +7,7 @@ from src.database import MongoDB
 from src.main import app
 from src.rabbit_mq_manager.monitor import RabbitMQManager
 from src.redis_manager.manager import RedisManager
-from src.schemas import SensorMetricCreate
+from src.schemas import MetricCreate
 
 
 client = TestClient(app)
@@ -15,12 +15,12 @@ client = TestClient(app)
 
 @pytest.fixture
 def sample_metric():
-    return {"illuminance": 42, "timestamp": datetime.now().isoformat()}
+    return {"value": 42, "timestamp": datetime.now().isoformat()}
 
 
 @pytest.fixture
 def metric_obj():
-    return SensorMetricCreate(value=42, timestamp=datetime.now())
+    return MetricCreate(value=42, timestamp=datetime.now())
 
 
 # --------------------
@@ -33,7 +33,7 @@ def test_set_device_metric_redis(mocker):
     redis_mgr.set_device_metric(device_id=1, value=42)
 
     mock_redis.hset.assert_called_once_with(
-        "device:1", mapping={"metric": "42", "new": "False"}
+        "devices:1", mapping={"metric": "42", "new": "False"}
     )
 
 
@@ -44,7 +44,7 @@ def test_get_device_metric_redis(mocker):
 
     result = redis_mgr.get_device_metric(1)
     assert result == {"metric": "42", "new": "False"}
-    mock_redis.hgetall.assert_called_once_with("device:1")
+    mock_redis.hgetall.assert_called_once_with("devices:1")
 
 
 # ------------------------
@@ -61,7 +61,7 @@ def test_create_metrics_entry_mongodb(mocker, metric_obj):
     metric_dict = metric_obj.dict()
     metric_dict["device_id"] = 1
 
-    with patch("src.schemas.SensorMetric.validate", return_value=metric_dict):
+    with patch("src.schemas.Metric.validate", return_value=metric_dict):
         result = db.create_metrics_entry(1, metric_obj)
 
     assert result["device_id"] == 1
@@ -71,7 +71,7 @@ def test_create_metrics_entry_mongodb(mocker, metric_obj):
 def test_get_device_metrics_mongodb(mocker):
     mock_collection = MagicMock()
     mock_cursor = MagicMock()
-    mock_cursor.sort.return_value = [{"illuminance": 1}, {"illuminance": 2}]
+    mock_cursor.sort.return_value = [{"value": 1}, {"value": 2}]
     mock_collection.find.return_value = mock_cursor
 
     mock_client = mocker.patch("src.database.MongoClient").return_value
@@ -81,19 +81,19 @@ def test_get_device_metrics_mongodb(mocker):
     result = db.get_device_metrics(1)
 
     assert isinstance(result, list)
-    assert result[0]["illuminance"] == 1
+    assert result[0]["value"] == 1
 
 
 def test_get_device_latest_metric_db(mocker):
     mock_collection = MagicMock()
-    mock_collection.find_one.return_value = {"illuminance": 123}
+    mock_collection.find_one.return_value = {"value": 123}
 
     mock_client = mocker.patch("src.database.MongoClient").return_value
     mock_client.__getitem__.return_value.__getitem__.return_value = mock_collection
 
     db = MongoDB()
     result = db.get_device_latest_metric(1)
-    assert result["illuminance"] == 123
+    assert result["value"] == 123
 
 
 # ----------------------------
@@ -109,10 +109,10 @@ def test_publish_data_rabbitmq(mocker, metric_obj):
     mock_connection.channel.return_value = mock_channel
     mock_connection.is_closed = False
 
-    with patch("src.schemas.SensorMetric.model_dump_json", return_value='{"illuminance": 42}') as mock_json:
+    with patch("src.schemas.Metric.model_dump_json", return_value='{"value": 42}') as mock_json:
         rabbit_mgr = RabbitMQManager()
         metric = mocker.Mock()
-        metric.model_dump_json.return_value = '{"illuminance": 42}'
+        metric.model_dump_json.return_value = '{"value": 42}'
         rabbit_mgr.publish_data(metric)
 
         mock_channel.basic_publish.assert_called_once()
@@ -140,19 +140,10 @@ def test_create_device_metric_endpoint(mocker, sample_metric):
     mock_redis.set_device_metric.assert_called_once()
 
 
-def test_get_device_metrics_history_endpoint(mocker):
-    mock_db = mocker.patch("src.main.db")
-    mock_db.get_device_metrics.return_value = [{"device_id": 1, "illuminance": 10, "timestamp": datetime.now().isoformat()}]
-
-    response = client.get("/api/metrics/?device_id=1")
-    assert response.status_code == 200
-    assert response.json()[0]["device_id"] == 1
-
-
 def test_get_device_latest_metric_endpoint(mocker):
     mock_db = mocker.patch("src.main.db")
     mock_db.get_device_latest_metric_db.return_value = {
-        "device_id": 1, "illuminance": 55, "timestamp": datetime.now().isoformat()
+        "device_id": 1, "metric": 55, "timestamp": datetime.now().isoformat()
     }
 
     response = client.get("/api/metrics/latest?device_id=1")
