@@ -37,17 +37,17 @@ jobs:
       - name: Install devices-api dependencies
         working-directory: ./devices-api
         run: |
-          pip install requirements.txt
+          pip install -r requirements.txt
 
       - name: Install rule-engine dependencies
         working-directory: ./rule-engine
         run: |
-          pip install requirements.txt
+          pip install -r requirements.txt
 
       - name: Install metrics-api dependencies
         working-directory: ./metrics-api
         run: |
-          pip install requirements.txt
+          pip install -r requirements.txt
 
       - name: unit tests devices-api
         working-directory: ./devices-api
