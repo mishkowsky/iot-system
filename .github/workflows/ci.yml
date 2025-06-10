@@ -75,7 +75,7 @@ jobs:
         env:
           PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
         run: |
-          docker compose up -d rule_engine
+          docker compose up -d rule-engine
           docker compose up -d metrics-api
           docker compose up -d devices-api
           docker compose up -d rule-engine
