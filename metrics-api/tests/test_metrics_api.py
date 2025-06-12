@@ -6,7 +6,8 @@ from datetime import datetime
 
 
 @pytest.fixture
-def client(mock_rabbit_mq):
+def client(mock_rabbit_mq, mocker):
+    mock_client = mocker.patch("src.database.MongoClient")
     from src.main import app
     return TestClient(app)
 
