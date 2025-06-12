@@ -144,7 +144,7 @@ services:
       - metrics-api
       - devices-api
       - rule-engine
-      - elasticsearch
+      - logstash
 
   tsung:
     build:

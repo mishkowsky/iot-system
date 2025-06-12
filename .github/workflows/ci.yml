@@ -99,47 +99,47 @@ jobs:
 #          docker compose logs -f
       - name: setup test data
         run: |
-          docker exec iot-service-devices-api-1 python /src/dao/init_database_entities.py
-          docker exec iot-service-metrics-api-1 python /src/create_test_db_entities.py
+          docker exec iot-system-devices-api-1 python /src/dao/init_database_entities.py
+          docker exec iot-system-metrics-api-1 python /src/create_test_db_entities.py
 #          python metrics-api/src/create_test_db_entities.py
 
       - name: high-rpc-few-users
         run: |
-          docker exec iot-service-tsung-1 tsung -f ./high-rpc-few-users.xml start
+          docker exec iot-system-tsung-1 tsung -f ./high-rpc-few-users.xml start
 
       - name: save logs
         run: |
-          TSUNG_LOG_DIR=$(docker exec iot-service-tsung-1 sh -c 'ls -td /root/.tsung/log/* | head -n 1')
+          TSUNG_LOG_DIR=$(docker exec iot-system-tsung-1 sh -c 'ls -td /root/.tsung/log/* | head -n 1')
           echo "Found Tsung log dir: $TSUNG_LOG_DIR"
           echo "TSUNG_LOG_DIR=$TSUNG_LOG_DIR" >> $GITHUB_ENV
           mkdir -p tsung-reports
-          docker cp iot-service-tsung-1:$TSUNG_LOG_DIR ./tsung-reports/high-rpc-few-users-logs
+          docker cp iot-system-tsung-1:$TSUNG_LOG_DIR ./tsung-reports/high-rpc-few-users-logs
 
       #--------------------------------------------------------
 
       - name: low-rpc-many-users
         run: |
-          docker exec iot-service-tsung-1 tsung -f ./low-rpc-many-users.xml start
+          docker exec iot-system-tsung-1 tsung -f ./low-rpc-many-users.xml start
 
       - name: save logs
         run: |
-          TSUNG_LOG_DIR=$(docker exec iot-service-tsung-1 sh -c 'ls -td /root/.tsung/log/* | head -n 1')
+          TSUNG_LOG_DIR=$(docker exec iot-system-tsung-1 sh -c 'ls -td /root/.tsung/log/* | head -n 1')
           echo "Found Tsung log dir: $TSUNG_LOG_DIR"
           echo "TSUNG_LOG_DIR=$TSUNG_LOG_DIR" >> $GITHUB_ENV
-          docker cp iot-service-tsung-1:$TSUNG_LOG_DIR ./tsung-reports/low-rpc-many-users-logs
+          docker cp iot-system-tsung-1:$TSUNG_LOG_DIR ./tsung-reports/low-rpc-many-users-logs
 
       #--------------------------------------------------------
 
       - name: high-rpc-many-users
         run: |
-          docker exec iot-service-tsung-1 tsung -f ./high-rpc-many-users.xml start
+          docker exec iot-system-tsung-1 tsung -f ./high-rpc-many-users.xml start
 
       - name: save logs
         run: |
-          TSUNG_LOG_DIR=$(docker exec iot-service-tsung-1 sh -c 'ls -td /root/.tsung/log/* | head -n 1')
+          TSUNG_LOG_DIR=$(docker exec iot-system-tsung-1 sh -c 'ls -td /root/.tsung/log/* | head -n 1')
           echo "Found Tsung log dir: $TSUNG_LOG_DIR"
           echo "TSUNG_LOG_DIR=$TSUNG_LOG_DIR" >> $GITHUB_ENV
-          docker cp iot-service-tsung-1:$TSUNG_LOG_DIR ./tsung-reports/high-rpc-many-users-logs
+          docker cp iot-system-tsung-1:$TSUNG_LOG_DIR ./tsung-reports/high-rpc-many-users-logs
 
       #--------------------------------------------------------
 
