@@ -74,7 +74,6 @@ jobs:
         env:
           PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
         run: |
-          docker compose up -d rule-engine
           docker compose up -d metrics-api
           docker compose up -d devices-api
           docker compose up -d rule-engine
@@ -89,6 +88,13 @@ jobs:
     steps:
       - name: setup test data
         run: |
+          docker compose up -d metrics-api
+          docker compose up -d devices-api
+          docker compose up -d rule-engine
+          docker compose up -d frontend
+          docker compose up -d nginx
+          docker compose up -d tsung
+          docker compose logs -f
           docker exec iot-service-devices-api-1 python /src/dao/init_database_entities.py
           docker exec iot-service-metrics-api-1 python /src/create_test_db_entities.py
 #          python metrics-api/src/create_test_db_entities.py
