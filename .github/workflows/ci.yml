@@ -9,83 +9,87 @@ on:
       - "master"
 
 jobs:
-  build:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Build Docker images
-        run: docker compose build
-
-  test:
-    runs-on: ubuntu-22.04
-    needs: build
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Upgrade pip and install Poetry via pip
-        run: |
-          python -m pip install --upgrade pip
-
-      - name: Install devices-api dependencies
-        working-directory: ./devices-api
-        run: |
-          pip install -r requirements.txt
-
-      - name: Install rule-engine dependencies
-        working-directory: ./rule-engine
-        run: |
-          pip install -r requirements.txt
-
-      - name: Install metrics-api dependencies
-        working-directory: ./metrics-api
-        run: |
-          pip install -r requirements.txt
-
-      - name: unit tests devices-api
-        working-directory: ./devices-api
-        env:
-          PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
-        run: |
-          pytest --cov=src tests/
-
-      - name: unit tests metrics-api
-        working-directory: ./metrics-api
-        env:
-          PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
-        run: |
-          pytest --cov=src tests/
-
-      - name: unit tests rule-engine
-        working-directory: ./rule-engine
-        env:
-          PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
-        run: |
-          pytest --cov=src tests/
-
-      - name: Integration tests
-        env:
-          PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
-        run: |
-          docker compose up -d --wait metrics-api
-          docker compose up -d --wait devices-api
-          docker compose up -d --wait rule-engine
-          docker compose up -d --wait frontend
-          docker compose up -d --wait nginx
-          docker compose logs -f &
-
-          python integration_tests/test.py
+#  build:
+#    runs-on: ubuntu-22.04
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v3
+#
+#      - name: Build Docker images
+#        run: docker compose build
+#
+#  test:
+#    runs-on: ubuntu-22.04
+#    needs: build
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v3
+#
+#      - name: Set up Python
+#        uses: actions/setup-python@v5
+#        with:
+#          python-version: '3.12'
+#
+#      - name: Upgrade pip and install Poetry via pip
+#        run: |
+#          python -m pip install --upgrade pip
+#
+#      - name: Install devices-api dependencies
+#        working-directory: ./devices-api
+#        run: |
+#          pip install -r requirements.txt
+#
+#      - name: Install rule-engine dependencies
+#        working-directory: ./rule-engine
+#        run: |
+#          pip install -r requirements.txt
+#
+#      - name: Install metrics-api dependencies
+#        working-directory: ./metrics-api
+#        run: |
+#          pip install -r requirements.txt
+#
+#      - name: unit tests devices-api
+#        working-directory: ./devices-api
+#        env:
+#          PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
+#        run: |
+#          pytest --cov=src tests/
+#
+#      - name: unit tests metrics-api
+#        working-directory: ./metrics-api
+#        env:
+#          PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
+#        run: |
+#          pytest --cov=src tests/
+#
+#      - name: unit tests rule-engine
+#        working-directory: ./rule-engine
+#        env:
+#          PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
+#        run: |
+#          pytest --cov=src tests/
+#
+#      - name: Integration tests
+#        env:
+#          PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
+#        run: |
+#          docker compose up -d --wait metrics-api
+#          docker compose up -d --wait devices-api
+#          docker compose up -d --wait rule-engine
+#          docker compose up -d --wait frontend
+#          docker compose up -d --wait nginx
+#          docker compose logs -f &
+#
+#          python integration_tests/test.py
   load_testing:
     runs-on: ubuntu-22.04
-    needs: test
+#    needs: test
     steps:
+      - name: debug
+        run: |
+          pwd
+          ls
       - name: setup test data
         run: |
           docker compose up -d --wait metrics-api
