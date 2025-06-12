@@ -88,7 +88,7 @@ jobs:
     steps:
       - name: checkout code
         uses: actions/checkout@v3
-      - name: setup test data
+      - name: run containers
         run: |
           docker compose up -d --wait metrics-api
           docker compose up -d --wait devices-api
@@ -96,8 +96,9 @@ jobs:
           docker compose up -d --wait frontend
           docker compose up -d --wait nginx
           docker compose up -d --wait tsung
-          docker compose logs -f &
-          
+#          docker compose logs -f
+      - name: setup test data
+        run: |
           docker exec iot-service-devices-api-1 python /src/dao/init_database_entities.py
           docker exec iot-service-metrics-api-1 python /src/create_test_db_entities.py
 #          python metrics-api/src/create_test_db_entities.py
