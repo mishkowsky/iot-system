@@ -33,7 +33,7 @@ def test_set_device_metric_redis(mocker, mock_rabbit_mq):
     redis_mgr.set_device_metric(device_id=1, value=42)
 
     mock_redis.hset.assert_called_once_with(
-        "devices:1", mapping={"metric": "42", "new": "False"}
+        "devices:1", mapping={"metric": 42, "new": "False"}
     )
 
 

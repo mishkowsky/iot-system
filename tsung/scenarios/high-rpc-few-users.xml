@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tsung SYSTEM "/tsung-1.8.0/tsung-1.0.dtd">
+
+<tsung loglevel="info">
+    <clients>
+        <client host="localhost" maxusers="30000" use_controller_vm="true"/>
+    </clients>
+
+    <servers>
+        <server host="nginx" port="80" type="tcp"/>
+    </servers>
+
+    <load>
+        <arrivalphase phase="1" duration="60" unit="second">
+            <users maxnumber="320" arrivalrate="150" unit="second"/>
+        </arrivalphase>
+    </load>
+
+    <sessions>
+        <session name="metric_post" probability="6.25" type="ts_http">
+            <for from="1" to="60" incr="1" var="counter">
+                <setdynvars sourcetype="random_number" start="1" end="1000">
+                    <var name="random_device_id"/>
+                </setdynvars>
+                <request subst="true">
+                    <http
+                            version="1.1"
+                            method="POST"
+                            url="/api/metrics/?device_id=%%_random_device_id%%"
+                            contents="{&quot;value&quot;: 15, &quot;timestamp&quot;: &quot;2025-06-11T19:35:12&quot;}"
+                            content_type="application/json">
+                    </http>
+                </request>
+                <thinktime value="1"/>
+            </for>
+        </session>
+        <session name="metric_post" probability="93.75" type="ts_http">
+            <for from="1" to="60" incr="1" var="counter">
+                <setdynvars sourcetype="random_number" start="1" end="1000">
+                    <var name="random_device_id"/>
+                </setdynvars>
+                <request subst="true">
+                    <http
+                            version="1.1"
+                            method="GET"
+                            url="/api/metrics/latest?device_id=%%_random_device_id%%"
+                            content_type="application/json">
+                    </http>
+                </request>
+                <thinktime value="1"/>
+            </for>
+        </session>
+    </sessions>
+</tsung>

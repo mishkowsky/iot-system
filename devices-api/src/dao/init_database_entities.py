@@ -1,3 +1,5 @@
+import random
+
 from loguru import logger
 from sqlalchemy.orm import Session
 from src.dao.database import Base, engine, get_db
@@ -25,7 +27,7 @@ def create_test_entities(db: Session):
                 db.add(room_db)
                 db.commit()
                 db.refresh(room_db)
-            device_count = 10
+            device_count = 16
             for m in range(0, device_count):
                 device_id = device_id_counter
                 device_id_counter += 1
@@ -38,7 +40,7 @@ def create_test_entities(db: Session):
                         device = Sensor(name=device_name, type=device_type, room=room_db)
                     else:
                         device_type = DeviceType.bulb
-                        device = Bulb(name=device_name, type=device_type, room=room_db,
+                        device = Bulb(name=device_name, type=device_type, room=room_db, is_on=random.randint(0, 1) > 0,
                                       luminous_efficiency=100, power=100)
                     db.add(device)
                     logger.debug(f'DEVICE {device_name} ADDED')

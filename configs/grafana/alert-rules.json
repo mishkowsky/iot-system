@@ -1,0 +1,877 @@
+apiVersion: 1
+groups:
+    - orgId: 1
+      name: group
+      folder: rules
+      interval: 10s
+      rules:
+        - uid: eeoh5fwlvn8xsf
+          title: device-api is_up
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 300
+                to: 0
+              datasourceUid: PBFA97CFB590B2093
+              model:
+                adhocFilters: []
+                datasource:
+                    type: prometheus
+                    uid: PBFA97CFB590B2093
+                disableTextWrap: false
+                editorMode: code
+                expr: max_over_time(up{job="devices-api-scraper"}[30s])
+                fullMetaSearch: false
+                includeNullMetadata: true
+                instant: false
+                interval: ""
+                intervalMs: 15000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: true
+                refId: A
+                useBackend: false
+            - refId: B
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params: []
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - B
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: last
+                refId: B
+                type: reduce
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 0
+                        type: eq
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: B
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          dashboardUid: f3b67384-f9c4-4ee2-9cb8-dab65432d21c
+          panelId: 7
+          noDataState: NoData
+          execErrState: Error
+          annotations:
+            __dashboardUid__: f3b67384-f9c4-4ee2-9cb8-dab65432d21c
+            __panelId__: "7"
+          isPaused: false
+          notification_settings:
+            receiver: Mikhail
+        - uid: ceoh5v4xlqjuod
+          title: New panel
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 300
+                to: 0
+              datasourceUid: PBFA97CFB590B2093
+              model:
+                adhocFilters: []
+                datasource:
+                    type: prometheus
+                    uid: PBFA97CFB590B2093
+                disableTextWrap: false
+                editorMode: code
+                expr: max_over_time(up{job="metrics-api-scraper"}[30s])
+                fullMetaSearch: false
+                includeNullMetadata: true
+                instant: false
+                interval: ""
+                intervalMs: 15000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: true
+                refId: A
+                useBackend: false
+            - refId: B
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params: []
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - B
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: last
+                refId: B
+                type: reduce
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 0
+                        type: eq
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: B
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          dashboardUid: f3b67384-f9c4-4ee2-9cb8-dab65432d21c
+          panelId: 8
+          noDataState: NoData
+          execErrState: Error
+          annotations:
+            __dashboardUid__: f3b67384-f9c4-4ee2-9cb8-dab65432d21c
+            __panelId__: "8"
+          isPaused: false
+          notification_settings:
+            receiver: Mikhail
+        - uid: feoh63zcfa3nkc
+          title: metrics-api mem_usage
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 300
+                to: 0
+              datasourceUid: PBFA97CFB590B2093
+              model:
+                adhocFilters: []
+                datasource:
+                    type: prometheus
+                    uid: PBFA97CFB590B2093
+                disableTextWrap: false
+                editorMode: builder
+                expr: service_mem_usage_percent{job="metrics-api-scraper"}
+                fullMetaSearch: false
+                includeNullMetadata: true
+                instant: false
+                interval: ""
+                intervalMs: 15000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: true
+                refId: A
+                useBackend: false
+            - refId: B
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params: []
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - B
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: last
+                refId: B
+                type: reduce
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 75
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: B
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          dashboardUid: f3b67384-f9c4-4ee2-9cb8-dab65432d21c
+          panelId: 4
+          noDataState: NoData
+          execErrState: Error
+          annotations:
+            __dashboardUid__: f3b67384-f9c4-4ee2-9cb8-dab65432d21c
+            __panelId__: "4"
+          isPaused: false
+          notification_settings:
+            receiver: Mikhail
+        - uid: feoh65snv71tsa
+          title: devices-api cpu
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 300
+                to: 0
+              datasourceUid: PBFA97CFB590B2093
+              model:
+                adhocFilters: []
+                datasource:
+                    type: prometheus
+                    uid: PBFA97CFB590B2093
+                disableTextWrap: false
+                editorMode: builder
+                expr: service_cpu_usage_percent{job="devices-api-scraper"}
+                fullMetaSearch: false
+                includeNullMetadata: true
+                instant: false
+                interval: ""
+                intervalMs: 15000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: true
+                refId: A
+                useBackend: false
+            - refId: B
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params: []
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - B
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: last
+                refId: B
+                type: reduce
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 80
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: B
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          dashboardUid: f3b67384-f9c4-4ee2-9cb8-dab65432d21c
+          panelId: 1
+          noDataState: NoData
+          execErrState: Error
+          annotations:
+            __dashboardUid__: f3b67384-f9c4-4ee2-9cb8-dab65432d21c
+            __panelId__: "1"
+          isPaused: false
+          notification_settings:
+            receiver: Mikhail
+        - uid: deoh82s6md3b4d
+          title: metrics-api cpu
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 300
+                to: 0
+              datasourceUid: PBFA97CFB590B2093
+              model:
+                adhocFilters: []
+                datasource:
+                    type: prometheus
+                    uid: PBFA97CFB590B2093
+                disableTextWrap: false
+                editorMode: builder
+                expr: service_cpu_usage_percent{job="metrics-api-scraper"}
+                fullMetaSearch: false
+                includeNullMetadata: true
+                instant: false
+                interval: ""
+                intervalMs: 15000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: true
+                refId: A
+                useBackend: false
+            - refId: B
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params: []
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - B
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: last
+                refId: B
+                type: reduce
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 80
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: B
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          dashboardUid: f3b67384-f9c4-4ee2-9cb8-dab65432d21c
+          panelId: 3
+          noDataState: NoData
+          execErrState: Error
+          annotations:
+            __dashboardUid__: f3b67384-f9c4-4ee2-9cb8-dab65432d21c
+            __panelId__: "3"
+          isPaused: false
+          notification_settings:
+            receiver: Mikhail
+        - uid: ceoha1mzuk4xsc
+          title: devices-api mem_usage
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 300
+                to: 0
+              datasourceUid: PBFA97CFB590B2093
+              model:
+                adhocFilters: []
+                datasource:
+                    type: prometheus
+                    uid: PBFA97CFB590B2093
+                disableTextWrap: false
+                editorMode: code
+                expr: service_mem_usage_percent{job="devices-api-scraper"}
+                fullMetaSearch: false
+                includeNullMetadata: true
+                instant: false
+                interval: ""
+                intervalMs: 15000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: true
+                refId: A
+                useBackend: false
+            - refId: B
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params: []
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - B
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: last
+                refId: B
+                type: reduce
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 75
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: B
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          dashboardUid: f3b67384-f9c4-4ee2-9cb8-dab65432d21c
+          panelId: 2
+          noDataState: NoData
+          execErrState: Error
+          annotations:
+            __dashboardUid__: f3b67384-f9c4-4ee2-9cb8-dab65432d21c
+            __panelId__: "2"
+          isPaused: false
+          notification_settings:
+            receiver: Mikhail
+        - uid: feoha6e4y445cd
+          title: rule-angine is_up
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 300
+                to: 0
+              datasourceUid: PBFA97CFB590B2093
+              model:
+                adhocFilters: []
+                datasource:
+                    type: prometheus
+                    uid: PBFA97CFB590B2093
+                disableTextWrap: false
+                editorMode: code
+                expr: max_over_time(up{job="rule-engine-scraper"}[30s])
+                fullMetaSearch: false
+                includeNullMetadata: true
+                instant: false
+                interval: ""
+                intervalMs: 15000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: true
+                refId: A
+                useBackend: false
+            - refId: B
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params: []
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - B
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: last
+                refId: B
+                type: reduce
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 0
+                        type: eq
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: B
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          dashboardUid: f3b67384-f9c4-4ee2-9cb8-dab65432d21c
+          panelId: 9
+          noDataState: NoData
+          execErrState: Error
+          annotations:
+            __dashboardUid__: f3b67384-f9c4-4ee2-9cb8-dab65432d21c
+            __panelId__: "9"
+          isPaused: false
+          notification_settings:
+            receiver: Mikhail
+        - uid: aeohaa1jxawhsf
+          title: rule-angine is_up
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 300
+                to: 0
+              datasourceUid: PBFA97CFB590B2093
+              model:
+                adhocFilters: []
+                datasource:
+                    type: prometheus
+                    uid: PBFA97CFB590B2093
+                disableTextWrap: false
+                editorMode: code
+                expr: max_over_time(up{job="rule-engine-scraper"}[30s])
+                fullMetaSearch: false
+                includeNullMetadata: true
+                instant: false
+                interval: ""
+                intervalMs: 15000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: true
+                refId: A
+                useBackend: false
+            - refId: B
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params: []
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - B
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: last
+                refId: B
+                type: reduce
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 0
+                        type: eq
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: B
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          dashboardUid: f3b67384-f9c4-4ee2-9cb8-dab65432d21c
+          panelId: 9
+          noDataState: NoData
+          execErrState: Error
+          annotations:
+            __dashboardUid__: f3b67384-f9c4-4ee2-9cb8-dab65432d21c
+            __panelId__: "9"
+          isPaused: false
+          notification_settings:
+            receiver: Mikhail
+        - uid: deohac7ebdxxca
+          title: rule-engine cpu
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 300
+                to: 0
+              datasourceUid: PBFA97CFB590B2093
+              model:
+                adhocFilters: []
+                datasource:
+                    type: prometheus
+                    uid: PBFA97CFB590B2093
+                disableTextWrap: false
+                editorMode: builder
+                expr: service_cpu_usage_percent{job="rule-engine-scraper"}
+                fullMetaSearch: false
+                includeNullMetadata: true
+                instant: false
+                interval: ""
+                intervalMs: 15000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: true
+                refId: A
+                useBackend: false
+            - refId: B
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params: []
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - B
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: last
+                refId: B
+                type: reduce
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 80
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: B
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          dashboardUid: f3b67384-f9c4-4ee2-9cb8-dab65432d21c
+          panelId: 5
+          noDataState: NoData
+          execErrState: Error
+          annotations:
+            __dashboardUid__: f3b67384-f9c4-4ee2-9cb8-dab65432d21c
+            __panelId__: "5"
+          isPaused: false
+          notification_settings:
+            receiver: Mikhail
+        - uid: deohae85pwrggb
+          title: rule-engine mem_usage
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 300
+                to: 0
+              datasourceUid: PBFA97CFB590B2093
+              model:
+                adhocFilters: []
+                datasource:
+                    type: prometheus
+                    uid: PBFA97CFB590B2093
+                disableTextWrap: false
+                editorMode: builder
+                expr: service_mem_usage_percent{job="rule-engine-scraper"}
+                fullMetaSearch: false
+                includeNullMetadata: true
+                instant: false
+                interval: ""
+                intervalMs: 15000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: true
+                refId: A
+                useBackend: false
+            - refId: B
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params: []
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - B
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: last
+                refId: B
+                type: reduce
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 75
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: B
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          dashboardUid: f3b67384-f9c4-4ee2-9cb8-dab65432d21c
+          panelId: 6
+          noDataState: NoData
+          execErrState: Error
+          annotations:
+            __dashboardUid__: f3b67384-f9c4-4ee2-9cb8-dab65432d21c
+            __panelId__: "6"
+          isPaused: false
+          notification_settings:
+            receiver: Mikhail

@@ -146,6 +146,20 @@ services:
       - rule-engine
       - elasticsearch
 
+  tsung:
+    build:
+      context: ./tsung
+    restart: on-failure
+    ports:
+      - 8091:8091
+    volumes:
+      - ./tsung/scenarios:/tsung/scenarios
+      - ./logs/tsung:/root/.tsung/log
+    networks:
+      iot-service-network:
+        aliases:
+          - tsung
+
   rabbitmq:
     image: rabbitmq:management
     ports:

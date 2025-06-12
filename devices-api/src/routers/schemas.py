@@ -75,7 +75,6 @@ class RoomUpdate(RoomBase):
 class Room(RoomBase):
     id: int
     devices: List[Union[Bulb, Sensor]] = []
-    devices_polymorphic: List[Union[Bulb, Sensor]] = []
 
     class Config:
         orm_mode = True

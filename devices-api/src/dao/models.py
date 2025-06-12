@@ -46,10 +46,6 @@ class Room(Base):
     floor = relationship('Floor', back_populates='rooms')
     devices = relationship('Device', back_populates='room', order_by=Device.name)
 
-    @property
-    def devices_polymorphic(self):
-        return self.devices
-
     # attendee = relationship(
     #     "Attendee",
     #     backref=backref(

@@ -53,6 +53,7 @@ class RuleEngine:
     def start(self):
         t = threading.Thread(name=f'Thread-prometheus-server', target=uvicorn.run,
                              kwargs={'app': app, 'port': CONFIG.APP_PORT, 'host': CONFIG.APP_HOST})
+        t.daemon = True
         t.start()
         # threading.Thread.run()
         # uvicorn.run(app, port=CONFIG.APP_PORT, host=CONFIG.APP_HOST)
@@ -63,3 +64,4 @@ if __name__ == '__main__':
     logger.add(f"logs/logs.txt", serialize=True)
     logger.info('RULE ENGINE STARTED')
     RuleEngine().start()
+    print('hello')

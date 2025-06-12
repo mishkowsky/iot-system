@@ -13,7 +13,7 @@ class RedisManager:
         return device_dict
 
     def set_device_metric(self, device_id: int, value: int):
-        self.redis.hset(f'devices:{device_id}', mapping={'metric': str(value), 'new': 'False'})
+        self.redis.hset(f'devices:{device_id}', mapping={'metric': value, 'new': 'False'})
 
 
 if __name__ == '__main__':
