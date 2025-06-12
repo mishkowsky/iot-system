@@ -17,4 +17,4 @@
 ## CI
 ### GitHub Actions
 ![](img/github-ci.png)
-
+[pipeline link](https://github.com/mishkowsky/iot-system/actions/runs/15551525603)

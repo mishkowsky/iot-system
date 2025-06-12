@@ -89,8 +89,9 @@ jobs:
     steps:
       - name: setup test data
         run: |
-          python devices-api/src/dao/init_database_entities.py
-          python metrics-api/src/create_test_db_entities.py
+          docker exec iot-service-devices-api-1 python /src/dao/init_database_entities.py
+          docker exec iot-service-metrics-api-1 python /src/create_test_db_entities.py
+#          python metrics-api/src/create_test_db_entities.py
 
       - name: high-rpc-few-users
         run: |
