@@ -196,9 +196,9 @@ services:
     ports:
       - 27017:27017
     volumes:
-      - ./logs/mongodb:/logs/
+#      - ./logs/mongodb:/logs/
       - ./data/metrics-db:/data/db
-    command: ['--logpath', '/logs/logs.txt']
+#    command: ['--logpath', '/logs/logs.txt']
     healthcheck:
       test: echo 'db.runCommand("ping").ok' | mongosh metrics-db:27017/test --quiet
     networks:
