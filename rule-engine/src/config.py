@@ -16,6 +16,7 @@ class Config:
     REDIS: RedisConfig
     RABBIT_MQ: RabbitMQConfig
     DEVICES_API_URL: str
+    METRICS_API_URL: str
     ILLUMINANCE_DELTA: int
 
 
@@ -30,6 +31,7 @@ CONFIG = Config(
     RABBIT_MQ=RabbitMQConfig(
         HOST=os.getenv("RABBITMQ_HOST", "localhost"),
         QUEUE_NAME=os.getenv("RABBITMQ_QUEUE", "iot-device-metrics")),
+    METRICS_API_URL=os.getenv("METRICS_API_URL", "http://localhost:8000"),
     DEVICES_API_URL=os.getenv("DEVICES_API_URL", "http://localhost:8001"),
     ILLUMINANCE_DELTA=25
 )

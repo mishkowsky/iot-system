@@ -15,7 +15,7 @@ class Bulb(Device):
     is_on: bool
     power: Optional[int]
     luminous_efficiency: Optional[int]
-    brightness: Optional[int]
+    # brightness: Optional[int]
 
 
 class Sensor(Device):

@@ -14,10 +14,10 @@ from pymongo import MongoClient
 class MongoDB:
 
     def __init__(self):
-        client = MongoClient(CONFIG.DB_URI)
+        client = MongoClient(CONFIG.DB_URI, w=0)
         mongo_db = client["metrics_db"]
         self.metrics_collection = mongo_db["metrics"]
-        self.metrics_collection.create_index([("device_id"), ("value", pymongo.DESCENDING)])
+        self.metrics_collection.create_index([("device_id"), ("timestamp", pymongo.DESCENDING)])
 
     def create_metrics_entry(self, device_id: int, metric: MetricCreate) -> Metric:
         metric_dict = metric.dict()

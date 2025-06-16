@@ -48,7 +48,6 @@ class Bulb(BulbBase):
     type: Literal["bulb"]
     power: Optional[int] = None
     luminous_efficiency: Optional[int] = None
-    # is_on: Optional[bool] = False
     brightness: Optional[int] = None
 
 
@@ -75,6 +74,24 @@ class RoomUpdate(RoomBase):
 class Room(RoomBase):
     id: int
     devices: List[Union[Bulb, Sensor]] = []
+
+    class Config:
+        orm_mode = True
+
+
+class BulbNoMetric(BulbBase):
+    type: Literal["bulb"]
+    power: Optional[int] = None
+    luminous_efficiency: Optional[int] = None
+
+
+class SensorNoMetric(Sensor):
+    pass
+
+
+class RoomNoMetrics(RoomBase):
+    id: int
+    devices: List[Union[BulbNoMetric, SensorNoMetric]] = []
 
     class Config:
         orm_mode = True

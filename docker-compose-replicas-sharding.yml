@@ -1,0 +1,422 @@
+
+
+networks:
+  iot-service-network:
+    driver: bridge
+
+services:
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./configs/prometheus/config.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - 9090:9090
+    depends_on:
+      - rule-engine
+      - metrics-api
+      - devices-api
+    networks:
+      iot-service-network:
+        aliases:
+          - prometheus
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - 3000:3000
+    volumes:
+      - ./configs/grafana/config.ini:/etc/grafana/grafana.ini
+      - ./configs/grafana/datasource.yaml:/etc/grafana/provisioning/datasources/default.yaml
+      - ./configs/grafana/dashboard.yaml:/etc/grafana/provisioning/dashboards/default.yaml
+      - ./configs/grafana/alert-rules.yaml:/etc/grafana/provisioning/alerting/alert-rules.yaml
+      - ./configs/grafana/contact-points.yaml:/etc/grafana/provisioning/alerting/contact-points.yaml
+      - ./configs/grafana/dashboards:/var/lib/grafana/dashboards
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+    networks:
+      iot-service-network:
+        aliases:
+          - grafana
+
+  setup:
+    profiles:
+      - setup
+    build:
+      context: ./configs/elk_setup/
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    init: true
+    volumes:
+      - ./configs/elk_setup/entrypoint.sh:/entrypoint.sh:ro,Z
+      - ./configs/elk_setup/lib.sh:/lib.sh:ro,Z
+      - ./configs/elk_setup/roles:/roles:ro,Z
+    environment:
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
+      LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
+      METRICBEAT_INTERNAL_PASSWORD: ${METRICBEAT_INTERNAL_PASSWORD:-}
+      FILEBEAT_INTERNAL_PASSWORD: ${FILEBEAT_INTERNAL_PASSWORD:-}
+      HEARTBEAT_INTERNAL_PASSWORD: ${HEARTBEAT_INTERNAL_PASSWORD:-}
+      MONITORING_INTERNAL_PASSWORD: ${MONITORING_INTERNAL_PASSWORD:-}
+      BEATS_SYSTEM_PASSWORD: ${BEATS_SYSTEM_PASSWORD:-}
+    networks:
+      iot-service-network:
+        aliases:
+          - setup
+    depends_on:
+      - elasticsearch
+
+  elasticsearch:
+    image: elasticsearch:8.17.1
+    volumes:
+      - ./configs/elasticsearch/config.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro,Z
+      - ./data/elasticsearch:/usr/share/elasticsearch/data:Z
+    ports:
+      - 9200:9200
+      - 9300:9300
+    environment:
+      node.name: elasticsearch
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
+      discovery.type: single-node
+      cluster.routing.allocation.disk.threshold_enabled: false
+    networks:
+      iot-service-network:
+        aliases:
+          - elasticsearch
+    restart: unless-stopped
+
+  logstash:
+    image: logstash:8.17.1
+    volumes:
+      - ./configs/logstash/config.yml:/usr/share/logstash/config/logstash.yml:ro,Z
+      - ./configs/logstash/pipeline:/usr/share/logstash/pipeline:ro,Z
+    ports:
+      - 5044:5044
+      - 50000:50000/tcp
+      - 50000:50000/udp
+      - 9600:9600
+    environment:
+      LS_JAVA_OPTS: -Xms256m -Xmx256m
+      LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
+    networks:
+      iot-service-network:
+        aliases:
+          - logstash
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+
+  kibana:
+    image: kibana:8.17.1
+    volumes:
+      - ./configs/kibana/config.yml:/usr/share/kibana/config/kibana.yml:ro,Z
+    ports:
+      - 5601:5601
+    environment:
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
+    networks:
+      iot-service-network:
+        aliases:
+          - kibana
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+
+  filebeat:
+    image: elastic/filebeat:8.17.1
+    user: root
+    command:
+      - -e
+      - --strict.perms=false
+    volumes:
+      - ./configs/filebeat/config.yml:/usr/share/filebeat/filebeat.yml:ro,Z
+      - ./logs/:/logs/:ro
+    environment:
+      FILEBEAT_INTERNAL_PASSWORD: ${FILEBEAT_INTERNAL_PASSWORD:-}
+      BEATS_SYSTEM_PASSWORD: ${BEATS_SYSTEM_PASSWORD:-}
+    networks:
+      iot-service-network:
+        aliases:
+          - filebeat
+    depends_on:
+      - metrics-api
+      - devices-api
+      - rule-engine
+      - logstash
+
+  tsung:
+    build:
+      context: ./tsung
+    restart: on-failure
+    ports:
+      - 8091:8091
+    volumes:
+      - ./tsung/scenarios:/tsung/scenarios
+      - ./logs/tsung:/root/.tsung/log
+    networks:
+      iot-service-network:
+        aliases:
+          - tsung
+
+  rabbitmq:
+    image: rabbitmq:management
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      iot-service-network:
+        aliases:
+          - rabbitmq
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
+    networks:
+      iot-service-network:
+        aliases:
+          - redis
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli ping | grep PONG" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  metrics-db:
+    image: mongo:latest
+    command: mongos --port 27017 --configdb rs-config-server/metrics-db-configsvr:27017 --bind_ip_all
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh metrics-db:27017/test --quiet
+    ports:
+      - 27117:27017
+    volumes:
+      - ./data/metrics-db-sharding-2/metrics-db:/data/db
+      - ./configs/mongo-db/sharding:/scripts
+    networks:
+      iot-service-network:
+        aliases:
+          - metrics-db
+
+  metrics-db-configsvr:
+    image: mongo:latest
+    command: mongod --port 27017 --configsvr --replSet rs-config-server
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh metrics-db-configsvr:27017/test --quiet
+    volumes:
+      - ./data/metrics-db-sharding-2/configsvr:/data/db
+      - ./configs/mongo-db/sharding:/scripts
+    ports:
+      - 27119:27017
+    networks:
+      iot-service-network:
+        aliases:
+          - metrics-db-configsvr
+
+  metrics-db-shard01-a:
+    image: mongo:latest
+    command: mongod --port 27017 --shardsvr --replSet rs-shard-01
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh metrics-db-shard01-a:27017/test --quiet
+    volumes:
+      - ./data/metrics-db-sharding-2/shard01-a:/data/db
+      - ./configs/mongo-db/sharding:/scripts
+    ports:
+      - 27122:27017
+    networks:
+      iot-service-network:
+        aliases:
+          - metrics-db-shard01-a
+
+  metrics-db-shard01-b:
+    image: mongo:latest
+    command: mongod --port 27017 --shardsvr --replSet rs-shard-01
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh metrics-db-shard01-b:27017/test --quiet
+    volumes:
+      - ./data/metrics-db-sharding-2/shard01-b:/data/db
+      - ./configs/mongo-db/sharding:/scripts
+    ports:
+      - 27123:27017
+    networks:
+      iot-service-network:
+        aliases:
+          - metrics-db-shard01-b
+
+  metrics-db-shard01-c:
+    image: mongo:latest
+    command: mongod --port 27017 --shardsvr --replSet rs-shard-01
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh metrics-db-shard01-c:27017/test --quiet
+    volumes:
+      - ./data/metrics-db-sharding-2/shard01-c:/data/db
+      - ./configs/mongo-db/sharding:/scripts
+    ports:
+      - 27124:27017
+    networks:
+      iot-service-network:
+        aliases:
+          - metrics-db-shard01-c
+
+  metrics-db-shard02-a:
+    image: mongo:latest
+    command: mongod --port 27017 --shardsvr --replSet rs-shard-02
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh metrics-db-shard02-a:27017/test --quiet
+    volumes:
+      - ./data/metrics-db-sharding-2/shard02-a:/data/db
+      - ./configs/mongo-db/sharding:/scripts
+    ports:
+      - 27125:27017
+    networks:
+      iot-service-network:
+        aliases:
+          - metrics-db-shard02-a
+
+  metrics-db-shard02-b:
+    image: mongo:latest
+    command: mongod --port 27017 --shardsvr --replSet rs-shard-02
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh metrics-db-shard02-b:27017/test --quiet
+    volumes:
+      - ./data/metrics-db-sharding-2/shard02-b:/data/db
+      - ./configs/mongo-db/sharding:/scripts
+    ports:
+      - 27126:27017
+    networks:
+      iot-service-network:
+        aliases:
+          - metrics-db-shard02-b
+
+  metrics-db-shard02-c:
+    image: mongo:latest
+    command: mongod --port 27017 --shardsvr --replSet rs-shard-02
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh metrics-db-shard02-c:27017/test --quiet
+    volumes:
+      - ./data/metrics-db-sharding-2/shard02-c:/data/db
+      - ./configs/mongo-db/sharding:/scripts
+    ports:
+      - 27127:27017
+    networks:
+      iot-service-network:
+        aliases:
+          - metrics-db-shard02-c
+
+  metrics-api:
+    build:
+      context: ./metrics-api
+    volumes:
+      - ./logs/metrics-api:/logs/
+    env_file: ./metrics-api/sharding.env
+    deploy:
+      replicas: 5
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1.5G
+        reservations:
+          cpus: '1.5'
+          memory: 1G
+      restart_policy:
+        condition: on-failure
+    depends_on:
+      metrics-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      iot-service-network:
+        aliases:
+          - metrics-api
+
+  devices-db:
+    image: postgres:15-alpine
+    volumes:
+      - ./data/devices-db:/var/lib/postgresql/data
+    expose:
+      - 5432
+    environment:
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_DATABASE}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      iot-service-network:
+        aliases:
+          - rooms-db
+
+  devices-api:
+    build:
+      context: ./devices-api
+    env_file: ./devices-api/prod.env
+    volumes:
+      - ./logs/devices-api:/logs/
+    depends_on:
+      devices-db:
+        condition: service_healthy
+    networks:
+      iot-service-network:
+        aliases:
+          - devices-api
+    environment:
+      - DB_URI=${DEVICES_DB_URI}
+
+  rule-engine:
+    build:
+      context: ./rule-engine
+    env_file: ./rule-engine/prod.env
+    volumes:
+      - ./logs/rule-engine:/logs/
+    depends_on:
+      devices-api:
+        condition: service_started
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      iot-service-network:
+        aliases:
+          - rule-engine
+
+  frontend:
+    build:
+      context: ./frontend
+    networks:
+      iot-service-network:
+        aliases:
+          - frontend
+
+  nginx:
+    image: nginx:stable-alpine
+    ports:
+      - "80:80"
+    volumes:
+      - './nginx.conf:/etc/nginx/nginx.conf'
+    depends_on:
+      - devices-api
+      - metrics-api
+      - frontend
+    networks:
+      iot-service-network:
+        aliases:
+          - nginx
+volumes:
+  elasticsearch:
+  es_data:

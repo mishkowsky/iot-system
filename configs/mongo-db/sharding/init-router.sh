@@ -1,0 +1,6 @@
+sh.addShard("rs-shard-01/metrics-db-shard01-a:27017")
+sh.addShard("rs-shard-01/metrics-db-shard01-b:27017")
+sh.addShard("rs-shard-01/metrics-db-shard01-c:27017")
+sh.addShard("rs-shard-02/metrics-db-shard02-a:27017")
+sh.addShard("rs-shard-02/metrics-db-shard02-b:27017")
+sh.addShard("rs-shard-02/metrics-db-shard02-c:27017")

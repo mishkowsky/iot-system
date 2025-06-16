@@ -28,6 +28,8 @@ services:
       - ./configs/grafana/config.ini:/etc/grafana/grafana.ini
       - ./configs/grafana/datasource.yaml:/etc/grafana/provisioning/datasources/default.yaml
       - ./configs/grafana/dashboard.yaml:/etc/grafana/provisioning/dashboards/default.yaml
+      - ./configs/grafana/alert-rules.yaml:/etc/grafana/provisioning/alerting/alert-rules.yaml
+      - ./configs/grafana/contact-points.yaml:/etc/grafana/provisioning/alerting/contact-points.yaml
       - ./configs/grafana/dashboards:/var/lib/grafana/dashboards
     environment:
       - GF_SECURITY_ADMIN_USER=admin
@@ -194,14 +196,11 @@ services:
     ports:
       - 27017:27017
     volumes:
-#      - ./logs/mongodb:/logs/
-      - ./db-data/metrics:/data/db
-#    command: ['--logpath', '/logs/logs.txt']
+      - ./logs/mongodb:/logs/
+      - ./data/metrics-db:/data/db
+    command: ['--logpath', '/logs/logs.txt']
     healthcheck:
       test: echo 'db.runCommand("ping").ok' | mongosh metrics-db:27017/test --quiet
-#    deploy:
-#      restart_policy:
-#        condition: on-failure[:5]
     networks:
       iot-service-network:
         aliases:
@@ -213,6 +212,17 @@ services:
     volumes:
       - ./logs/metrics-api:/logs/
     env_file: ./metrics-api/prod.env
+    deploy:
+      replicas: 5
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1.5G
+        reservations:
+          cpus: '1.5'
+          memory: 1G
+      restart_policy:
+        condition: on-failure
     depends_on:
       metrics-db:
         condition: service_healthy
@@ -228,7 +238,7 @@ services:
   devices-db:
     image: postgres:15-alpine
     volumes:
-      - ./db-data/devices:/var/lib/postgresql/data
+      - ./data/devices-db:/var/lib/postgresql/data
     expose:
       - 5432
     environment:

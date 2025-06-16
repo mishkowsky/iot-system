@@ -19,7 +19,7 @@
     <sessions>
         <session name="metric_post" probability="6.25" type="ts_http">
             <for from="1" to="12" incr="1" var="counter">
-                <setdynvars sourcetype="random_number" start="1" end="1000">
+                <setdynvars sourcetype="random_number" start="1" end="1600">
                     <var name="random_device_id"/>
                 </setdynvars>
                 <request subst="true">
@@ -36,7 +36,7 @@
         </session>
         <session name="metric_post" probability="93.75" type="ts_http">
             <for from="1" to="12" incr="1" var="counter">
-                <setdynvars sourcetype="random_number" start="1" end="1000">
+                <setdynvars sourcetype="random_number" start="1" end="1600">
                     <var name="random_device_id"/>
                 </setdynvars>
                 <request subst="true">

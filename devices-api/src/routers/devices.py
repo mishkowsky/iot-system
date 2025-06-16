@@ -30,7 +30,7 @@ def create_device(device: schemas.DeviceCreate, db: Session = Depends(get_db)):
     return devices.create_device(db, device)
 
 
-@router.get("/{device_id}/room", response_model=Optional[schemas.Room])
+@router.get("/{device_id}/room", response_model=Optional[schemas.RoomNoMetrics])
 def get_related_room_by_device_id(device_id: int, db: Session = Depends(get_db)):
     return rooms.get_room_by_device_id(db, device_id)
 

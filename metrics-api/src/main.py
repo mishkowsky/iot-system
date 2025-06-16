@@ -35,13 +35,29 @@ hostname = socket.gethostname()
 
 
 @router.post("/", response_model=Metric)
-def create_device_metric(device_id: int, metric: MetricCreate):
+def create_device_metric(device_id: int, metric: MetricCreate, is_bulb: bool = False):
     REQUESTS.labels(hostname=hostname).inc()
     created_entity = db.create_metrics_entry(device_id, metric)
-    rabbit_mq_manager.publish_data(created_entity)
+    if not is_bulb:
+        rabbit_mq_manager.publish_data(created_entity)
     redis_manager.set_device_metric(device_id, metric.value)
-    logger.info(f'CREATED METRIC {metric}')
+    logger.info(f'CREATED METRIC {created_entity}')
     return created_entity
+
+
+@router.post("/adjustment", response_model=List[Metric])
+def adjust_latest_metric(device_ids: List[int], adjustment: int):
+    result_list = []
+    for device_id in device_ids:
+        res = db.get_device_latest_metric(device_id)
+        if res:
+            latest_metric_value = res['value']
+        else:
+            latest_metric_value = 0
+        new_metric_value = max(min(latest_metric_value + adjustment, 100), 0)
+        created_metric = db.create_metrics_entry(device_id, MetricCreate.validate({'timestamp': datetime.now(),'value': new_metric_value}))
+        result_list.append(created_metric)
+    return result_list
 
 
 @router.get("/", response_model=List[Metric])
