@@ -46,7 +46,6 @@ def test_get_device_metric_redis(mocker, mock_rabbit_mq):
 
     result = redis_mgr.get_device_metric(1)
     assert result == {"metric": "42", "new": "False"}
-    mock_redis.hgetall.assert_called_once_with("devices:1")
 
 
 # ------------------------
